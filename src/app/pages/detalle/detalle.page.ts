@@ -12,7 +12,6 @@ import { bookmark, bookmarkOutline } from 'ionicons/icons';
 
 import { IncidenciaService } from '../../services/incidencia';
 import { SeguimientoService } from '../../services/seguimiento';
-import { Incidencia } from '../../models/incidencia.model';
 
 @Component({
   selector: 'app-detalle',
@@ -32,8 +31,14 @@ export class DetallePage implements OnInit {
   private seguimientoService = inject(SeguimientoService);
   private toastController = inject(ToastController);
 
-  incidencia: any = null;
-  cargando = true;
+  incidencia: any = {
+    id: '', tipo: 'Cargando...', descripcion: '...', direccion: '...',
+    sector: '...', fecha: new Date().toISOString(), estado: 'pendiente',
+    prioridad: 'media', fotografia: '', latitud: null, longitud: null,
+    observacion_resolucion: ''
+  };
+  
+  cargando = false; 
   errorMensaje = '';
   esSeguimiento = false;
   
@@ -45,10 +50,10 @@ export class DetallePage implements OnInit {
       handler: (data: any) => {
         if (!data.observacion || data.observacion.trim() === '') {
           this.mostrarToast('La observación es obligatoria.');
-          return false; // No cierra la alerta
+          return false;
         }
         this.confirmarResolucion(data.observacion);
-        return true; // Cierra la alerta
+        return true;
       }
     }
   ];
@@ -57,63 +62,59 @@ export class DetallePage implements OnInit {
     addIcons({ bookmark, bookmarkOutline });
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      // Datos fantasma para carga instantánea
-      this.incidencia = {
-        id: id,
-        tipo: 'Cargando...',
-        descripcion: '...',
-        direccion: '...',
-        sector: '...',
-        fecha: new Date().toISOString(),
-        estado: 'pendiente',
-        prioridad: 'media',
-        fotografia: '',
-        latitud: null,
-        longitud: null,
-        observacion_resolucion: ''
-      };
-      this.cargando = false; 
-      this.esSeguimiento = await this.seguimientoService.estaEnSeguimiento(id);
+      this.incidencia.id = id;
+      
+      // ¡AQUÍ ESTABA EL ERROR! Quitamos el 'await' porque ahora el servicio es instantáneo
+      this.esSeguimiento = this.seguimientoService.estaEnSeguimiento(id);
 
-      // Traer datos reales
       this.incidenciaService.getIncidencia(id).subscribe({
-        next: (data) => { this.incidencia = data; },
-        error: (err) => { this.errorMensaje = 'Error al conectar.'; }
+        next: (data) => { 
+          this.incidencia = data; 
+          // Volvemos a verificar por si el ID cambió
+          this.esSeguimiento = this.seguimientoService.estaEnSeguimiento(this.incidencia.id);
+        },
+        error: (err) => { 
+          this.errorMensaje = 'No se pudo actualizar la información (Mostrando datos en caché).'; 
+        }
       });
     }
   }
 
-  async toggleSeguimiento() {
+    toggleSeguimiento() {
     if (!this.incidencia) return;
-    this.esSeguimiento = await this.seguimientoService.toggleSeguimiento(this.incidencia.id);
-    this.mostrarToast(this.esSeguimiento ? 'Añadido a seguimiento' : 'Removido');
+    
+    // Llamamos al servicio que guarda en el localStorage
+    this.esSeguimiento = this.seguimientoService.toggleSeguimiento(this.incidencia);
+    
+    // Mostramos el mensaje para saber que funcionó
+    this.mostrarToast(this.esSeguimiento ? '¡Añadido a seguimiento!' : 'Removido');
+    
+    console.log('Guardado en localStorage:', localStorage.getItem('urban_inspect_seguimientos'));
   }
-
   marcarEnProceso() {
-    if (!this.incidencia) return;
+    if (!this.incidencia.id) return;
     this.actualizarEstado('en_proceso', this.incidencia.observacion_resolucion || '');
   }
 
   pedirResolucion() {
-    if (!this.incidencia) return;
+    if (!this.incidencia.id) return;
     this.mostrarAlertaResolucion = true;
   }
 
   confirmarResolucion(observacion: string) {
-    if (!this.incidencia) return;
+    if (!this.incidencia.id) return;
     this.actualizarEstado('resuelta', observacion);
   }
-    actualizarEstado(nuevoEstado: string, observacion: string) {
-    if (!this.incidencia) return;
+
+  actualizarEstado(nuevoEstado: string, observacion: string) {
+    if (!this.incidencia.id) return;
     
-    // Actualizamos la pantalla rápido
     this.incidencia.estado = nuevoEstado;
     if (observacion) this.incidencia.observacion_resolucion = observacion;
 
-    // Solo enviamos los campos que cambian
     const datosActualizados = {
       estado: nuevoEstado,
       observacion_resolucion: observacion || this.incidencia.observacion_resolucion || ''
@@ -122,17 +123,14 @@ export class DetallePage implements OnInit {
     this.incidenciaService.actualizarIncidencia(this.incidencia.id, datosActualizados).subscribe({
       next: (data) => {
         this.incidencia = data;
-        this.mostrarToast(`¡Actualizado a ${nuevoEstado.replace('_', ' ')}!`);
+        this.mostrarToast(`Estado actualizado a ${nuevoEstado.replace('_', ' ')}`);
       },
       error: (err) => {
-        // Si falla, imprimimos el error en la consola y en pantalla
-        console.error('Error exacto de MockAPI:', err);
-        this.mostrarToast('Fallo al actualizar: ' + (err.error?.message || err.message));
-        this.ngOnInit(); // Recargamos los datos originales
+        this.mostrarToast('Error al actualizar en MockAPI');
       }
     });
   }
-  
+
   getColorEstado(estado: string): string {
     switch (estado) {
       case 'pendiente': return 'warning';

@@ -8,26 +8,12 @@
 </ion-header>
 
 <ion-content>
-  <!-- Spinner -->
-  <div *ngIf="cargando" class="ion-text-center ion-padding" style="margin-top: 50px;">
-    <ion-spinner></ion-spinner>
-    <p>Buscando en tus seguimientos...</p>
-  </div>
-
-  <!-- Error -->
-  <div *ngIf="!cargando && errorMensaje" class="ion-padding ion-text-center">
-    <p style="color: var(--ion-color-danger);">{{ errorMensaje }}</p>
-    <ion-button size="small" fill="outline" (click)="cargarSeguimiento()">Reintentar</ion-button>
-  </div>
-
-  <!-- Vacío -->
-  <div *ngIf="!cargando && !errorMensaje && incidencias.length === 0" class="ion-padding ion-text-center" style="margin-top: 50px;">
+  <div *ngIf="incidencias.length === 0" class="ion-padding ion-text-center" style="margin-top: 50px;">
     <h2 style="color: gray;">No tienes incidencias en seguimiento</h2>
-    <p>Ve al listado y toca el ícono de marcador en el detalle de una incidencia.</p>
+    <p>Ve al listado y toca "Añadir a mis seguimientos".</p>
   </div>
 
-  <!-- Lista -->
-  <ion-list *ngIf="!cargando && incidencias.length > 0">
+  <ion-list *ngIf="incidencias.length > 0">
     <ion-card *ngFor="let item of incidencias" (click)="verDetalle(item.id)" style="cursor: pointer;">
       <ion-card-header>
         <ion-card-title style="display: flex; justify-content: space-between;">
@@ -35,7 +21,6 @@
           <ion-badge [color]="getColorEstado(item.estado)">{{ item.estado }}</ion-badge>
         </ion-card-title>
       </ion-card-header>
-      
       <ion-card-content>
         <p><strong>Código:</strong> {{ item.id }}</p>
         <p><strong>Descripción:</strong> {{ item.descripcion }}</p>

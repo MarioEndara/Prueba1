@@ -4,29 +4,12 @@
       <ion-back-button defaultHref="/listado"></ion-back-button>
     </ion-buttons>
     <ion-title>Detalle</ion-title>
-    <ion-buttons slot="end" *ngIf="incidencia">
-      <ion-button (click)="toggleSeguimiento()">
-        <ion-icon slot="icon-only" [name]="esSeguimiento ? 'bookmark' : 'bookmark-outline'"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Spinner -->
-  <div *ngIf="cargando" class="ion-text-center ion-padding" style="margin-top: 50px;">
-    <ion-spinner></ion-spinner>
-    <p>Cargando detalle...</p>
-  </div>
-
-  <!-- Error -->
-  <div *ngIf="!cargando && errorMensaje" class="ion-text-center ion-padding">
-    <p style="color: var(--ion-color-danger);">{{ errorMensaje }}</p>
-    <ion-button size="small" fill="outline" (click)="ngOnInit()">Reintentar</ion-button>
-  </div>
-
-  <!-- Contenido -->
-  <div *ngIf="!cargando && incidencia">
+  <!-- Contenido de la incidencia -->
+  <div *ngIf="incidencia">
     <ion-list>
       <ion-list-header><ion-label>Información</ion-label></ion-list-header>
       <ion-item><ion-label><h2>Código</h2><p>{{ incidencia.id }}</p></ion-label></ion-item>
@@ -43,17 +26,29 @@
       <ion-img [src]="incidencia.fotografia" style="border-radius: 8px; width: 100%;"></ion-img>
     </div>
 
+    <!-- SECCIÓN DE BOTONES -->
     <div class="ion-margin-top" style="display: flex; flex-direction: column; gap: 10px;">
+      
+      <!-- 1. Botón de Seguimiento (Naranja si no está, Rojo si ya está) -->
+      <ion-button expand="block" [color]="esSeguimiento ? 'danger' : 'warning'" (click)="toggleSeguimiento()">
+        {{ esSeguimiento ? 'QUITAR DE MIS SEGUIMIENTOS' : 'AÑADIR A MIS SEGUIMIENTOS' }}
+      </ion-button>
+
+      <!-- 2. Botón para marcar en proceso -->
       <ion-button expand="block" color="primary" *ngIf="incidencia.estado === 'pendiente'" (click)="marcarEnProceso()">
         Marcar como En Proceso
       </ion-button>
+
+      <!-- 3. Botón para marcar como resuelta -->
       <ion-button expand="block" color="success" *ngIf="incidencia.estado !== 'resuelta'" (click)="pedirResolucion()">
         Marcar como Resuelta
       </ion-button>
+
     </div>
   </div>
 </ion-content>
 
+<!-- Alerta para la observación (R9) -->
 <ion-alert
   [isOpen]="mostrarAlertaResolucion"
   header="Resolver Incidencia"

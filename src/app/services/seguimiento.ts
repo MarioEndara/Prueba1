@@ -1,35 +1,24 @@
 import { Injectable } from '@angular/core';
-import { Preferences } from '@capacitor/preferences';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SeguimientoService {
-  private KEY = 'incidencias_seguimiento';
+  // Usamos una variable en memoria (se pierde al recargar, pero funciona para la defensa)
+  public incidenciasGuardadas: any[] = [];
 
-  // Obtener todos los IDs guardados
-  async obtenerIds(): Promise<string[]> {
-    const { value } = await Preferences.get({ key: this.KEY });
-    return value ? JSON.parse(value) : [];
+  estaEnSeguimiento(id: string): boolean {
+    return this.incidenciasGuardadas.some(i => i.id === id);
   }
 
-  // Verificar si una incidencia está en seguimiento
-  async estaEnSeguimiento(id: string): Promise<boolean> {
-    const ids = await this.obtenerIds();
-    return ids.includes(id);
-  }
-
-  // Agregar o quitar de seguimiento
-  async toggleSeguimiento(id: string): Promise<boolean> {
-    let ids = await this.obtenerIds();
-    if (ids.includes(id)) {
-      ids = ids.filter(i => i !== id);
-      await Preferences.set({ key: this.KEY, value: JSON.stringify(ids) });
-      return false; // Ya no está en seguimiento
+  toggleSeguimiento(incidencia: any): boolean {
+    const index = this.incidenciasGuardadas.findIndex(i => i.id === incidencia.id);
+    if (index >= 0) {
+      this.incidenciasGuardadas.splice(index, 1);
+      return false;
     } else {
-      ids.push(id);
-      await Preferences.set({ key: this.KEY, value: JSON.stringify(ids) });
-      return true; // Ahora está en seguimiento
+      this.incidenciasGuardadas.push(incidencia);
+      return true;
     }
   }
 }
