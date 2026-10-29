@@ -23,6 +23,6 @@ Aplicación móvil para el registro y seguimiento de incidencias en infraestruct
 3. Para Android: `ionic build`, `npx cap sync`, `npx cap open android`.
 
 ## Datos del Estudiante
-- **Nombre:** [Tu Nombre]
+- **Nombre:** [Mario Endara]
 - **Materia:** Desarrollo de Aplicaciones Móviles
-- **Institución:** ESFOT - EPN
+- **Institución:** EPN
