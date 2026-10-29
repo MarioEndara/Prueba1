@@ -30,13 +30,15 @@ import { ClimaService } from '../../services/clima';
   ],
 })
 export class RegistroPage implements OnInit {
-    private CLOUDINARY_CLOUD_NAME = 'Mario'; // <-- Cámbialo por el tuyo
-  private CLOUDINARY_PRESET = 'prueba1'; // El nombre que le pusiste al preset
+  // ⚠️ AQUÍ ESTÁ EL NOMBRE CORREGIDO DE TU NUBE
+  private CLOUDINARY_CLOUD_NAME = 'dgmjpbbfk'; 
+  private CLOUDINARY_PRESET = 'prueba1'; 
+
   private incidenciaService = inject(IncidenciaService);
   private router = inject(Router);
   private toastController = inject(ToastController);
   private alertController = inject(AlertController);
-  public climaService = inject(ClimaService); // Público para usarlo en el HTML
+  public climaService = inject(ClimaService);
 
   incidencia: CrearIncidenciaDto = {
     tipo: '',
@@ -57,7 +59,6 @@ export class RegistroPage implements OnInit {
   guardando = false;
   readonly KEY_BORRADOR = 'borrador_incidencia';
 
-  // Variables para el clima
   datosClima: any = null;
   errorClima: string = '';
 
@@ -137,7 +138,6 @@ export class RegistroPage implements OnInit {
     }
   }
 
-  // Lógica del Clima (R4)
   consultarClima() {
     if (this.incidencia.latitud === null || this.incidencia.longitud === null) {
       this.mostrarToast('Primero debes obtener la ubicación (GPS o manual).');
@@ -157,7 +157,7 @@ export class RegistroPage implements OnInit {
     });
   }
 
-    async guardarIncidencia() {
+  async guardarIncidencia() {
     if (!this.incidencia.tipo || !this.incidencia.descripcion || !this.incidencia.direccion || !this.incidencia.sector) {
       this.mostrarToast('Por favor, completa todos los campos obligatorios.');
       return;
@@ -176,12 +176,10 @@ export class RegistroPage implements OnInit {
     this.guardando = true;
 
     try {
-      // Si hay foto, la subimos a Cloudinary primero
       if (this.fotoCapturada) {
         this.mostrarToast('Subiendo fotografía...');
         
         const formData = new FormData();
-        // Convertimos la imagen Base64 a un archivo para enviarlo
         const blob = this.base64ToBlob(this.fotoCapturada);
         formData.append('file', blob);
         formData.append('upload_preset', this.CLOUDINARY_PRESET);
@@ -194,13 +192,12 @@ export class RegistroPage implements OnInit {
         const data = await response.json();
         
         if (data.secure_url) {
-          this.incidencia.fotografia = data.secure_url; // ¡URL real de internet!
+          this.incidencia.fotografia = data.secure_url;
         } else {
           throw new Error('No se pudo obtener la URL de la imagen');
         }
       }
 
-      // Ahora guardamos la incidencia con la URL de Cloudinary
       this.incidenciaService.crearIncidencia(this.incidencia).subscribe({
         next: async () => {
           this.guardando = false;
@@ -219,7 +216,6 @@ export class RegistroPage implements OnInit {
       console.error(error);
       this.mostrarToast('Error al subir la imagen. Guardando sin foto...');
       
-      // Si falla Cloudinary, guardamos sin foto para no perder el registro
       this.incidencia.fotografia = '';
       this.incidenciaService.crearIncidencia(this.incidencia).subscribe({
         next: () => {
@@ -229,7 +225,6 @@ export class RegistroPage implements OnInit {
     }
   }
 
-  // Función auxiliar para convertir el texto Base64 a un archivo real
   base64ToBlob(base64: string): Blob {
     const parts = base64.split(',');
     const byteString = atob(parts[1]);

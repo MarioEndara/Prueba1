@@ -108,13 +108,9 @@ export class DetallePage implements OnInit {
     if (!this.incidencia.id) return;
     this.actualizarEstado('resuelta', observacion);
   }
-
   actualizarEstado(nuevoEstado: string, observacion: string) {
     if (!this.incidencia.id) return;
     
-    this.incidencia.estado = nuevoEstado;
-    if (observacion) this.incidencia.observacion_resolucion = observacion;
-
     const datosActualizados = {
       estado: nuevoEstado,
       observacion_resolucion: observacion || this.incidencia.observacion_resolucion || ''
@@ -122,14 +118,17 @@ export class DetallePage implements OnInit {
 
     this.incidenciaService.actualizarIncidencia(this.incidencia.id, datosActualizados).subscribe({
       next: (data) => {
+        // Si la API responde bien, actualizamos la pantalla
         this.incidencia = data;
         this.mostrarToast(`Estado actualizado a ${nuevoEstado.replace('_', ' ')}`);
       },
       error: (err) => {
-        this.mostrarToast('Error al actualizar en MockAPI');
+        // Si la API falla, mostramos el error y no cambiamos nada en pantalla
+        console.error(err);
+        this.mostrarToast('Error al actualizar en el servidor. Intenta de nuevo.');
       }
     });
-  }
+  } 
 
   getColorEstado(estado: string): string {
     switch (estado) {
