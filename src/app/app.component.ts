@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // <-- Agrega esto
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
   IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar,
   IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel, IonMenuToggle
 } from '@ionic/angular/standalone';
-import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { homeOutline, listOutline, bookmarkOutline, addCircleOutline } from 'ionicons/icons';
 
@@ -13,10 +13,9 @@ import { homeOutline, listOutline, bookmarkOutline, addCircleOutline } from 'ion
   templateUrl: 'app.component.html',
   standalone: true,
   imports: [
-    CommonModule, // <-- Y aquí en el array de imports
-    IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar,
+    CommonModule, IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar,
     IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel, IonMenuToggle, RouterLink
-  ],
+  ]
 })
 export class AppComponent {
   menuItems = [

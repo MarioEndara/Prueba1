@@ -3,10 +3,30 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Inicio</ion-title>
+    <ion-title>UrbanInspect</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <p>Pantalla de inicio (revisar la consola para ver los datos).</p>
+<ion-content class="ion-padding ion-text-center">
+  <div style="margin-top: 40px; margin-bottom: 40px;">
+    <h1 style="font-weight: bold; color: var(--ion-color-primary);">Bienvenido</h1>
+    <p>Sistema de Inspección de Infraestructura Urbana</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 15px;">
+    <ion-button expand="block" size="large" (click)="irARegistro()">
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+      Registrar Nueva Incidencia
+    </ion-button>
+
+    <ion-button expand="block" size="large" color="secondary" (click)="irAListado()">
+      <ion-icon slot="start" name="list-outline"></ion-icon>
+      Ver Todas las Incidencias
+    </ion-button>
+
+    <ion-button expand="block" size="large" color="tertiary" (click)="irASeguimiento()">
+      <ion-icon slot="start" name="bookmark-outline"></ion-icon>
+      Mis Seguimientos
+    </ion-button>
+  </div>
 </ion-content>

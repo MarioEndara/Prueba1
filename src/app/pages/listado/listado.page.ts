@@ -1,11 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router'; // Para navegar al detalle luego
+import { Router } from '@angular/router';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
   IonList, IonBadge, IonSpinner,
   IonInfiniteScroll, IonInfiniteScrollContent, IonRefresher, IonRefresherContent,
-  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonThumbnail
+  IonCard, IonCardHeader, IonCardTitle, IonCardContent
 } from '@ionic/angular/standalone';
 import { IncidenciaService } from '../../services/incidencia';
 import { Incidencia } from '../../models/incidencia.model';
@@ -19,12 +19,12 @@ import { Incidencia } from '../../models/incidencia.model';
     CommonModule, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
     IonList, IonBadge, IonSpinner,
     IonInfiniteScroll, IonInfiniteScrollContent, IonRefresher, IonRefresherContent,
-    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonThumbnail
+    IonCard, IonCardHeader, IonCardTitle, IonCardContent
   ],
 })
 export class ListadoPage implements OnInit {
   private incidenciaService = inject(IncidenciaService);
-  private router = inject(Router); // Inyectamos el Router
+  private router = inject(Router);
 
   incidencias: Incidencia[] = [];
   page: number = 1;
@@ -101,7 +101,6 @@ export class ListadoPage implements OnInit {
     }
   }
 
-  // Ahora sí, usamos el Router para ir al detalle
   verDetalle(id: string) {
     this.router.navigate(['/detalle', id]);
   }
