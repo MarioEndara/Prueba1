@@ -1,13 +1,111 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>registro</ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Registrar Incidencia</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">registro</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item>
+      <ion-label position="floating">Tipo de incidencia *</ion-label>
+      <ion-select [(ngModel)]="incidencia.tipo" (ionChange)="guardarBorrador()" interface="action-sheet">
+        <ion-select-option value="bache">Bache</ion-select-option>
+        <ion-select-option value="luminaria">Luminaria dañada</ion-select-option>
+        <ion-select-option value="senalizacion">Señalización</ion-select-option>
+        <ion-select-option value="alcantarilla">Alcantarilla</ion-select-option>
+        <ion-select-option value="parque">Daño en parque</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Descripción *</ion-label>
+      <ion-textarea [(ngModel)]="incidencia.descripcion" (ionChange)="guardarBorrador()" placeholder="Describe el problema..."></ion-textarea>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Dirección *</ion-label>
+      <ion-input [(ngModel)]="incidencia.direccion" (ionChange)="guardarBorrador()"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Sector *</ion-label>
+      <ion-input [(ngModel)]="incidencia.sector" (ionChange)="guardarBorrador()"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Prioridad *</ion-label>
+      <ion-select [(ngModel)]="incidencia.prioridad" (ionChange)="guardarBorrador()">
+        <ion-select-option value="baja">Baja</ion-select-option>
+        <ion-select-option value="media">Media</ion-select-option>
+        <ion-select-option value="alta">Alta (Requiere foto)</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+
+  <!-- Ubicación (R7) -->
+  <div class="ion-margin-top">
+    <ion-button expand="block" fill="outline" color="secondary" (click)="obtenerUbicacion()" [disabled]="cargandoUbicacion">
+      <ion-icon slot="start" name="location-outline"></ion-icon>
+      {{ cargandoUbicacion ? 'Obteniendo...' : 'Obtener Ubicación GPS' }}
+    </ion-button>
+    
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Latitud</ion-label>
+        <ion-input type="number" [(ngModel)]="incidencia.latitud" (ionChange)="guardarBorrador()"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Longitud</ion-label>
+        <ion-input type="number" [(ngModel)]="incidencia.longitud" (ionChange)="guardarBorrador()"></ion-input>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <!-- Clima (R4) -->
+  <div class="ion-margin-top" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px; background: #f9f9f9;">
+    <h3 style="margin-top: 0;">Clima en la ubicación</h3>
+    
+    <ion-button expand="block" color="primary" fill="outline" (click)="consultarClima()">
+      <ion-icon slot="start" name="cloud-outline"></ion-icon>
+      Consultar Clima
+    </ion-button>
+
+    <div *ngIf="errorClima" style="color: red; margin-top: 10px;">
+      <p>{{ errorClima }} (Puedes continuar con el registro).</p>
+    </div>
+
+    <div *ngIf="datosClima" style="margin-top: 10px;">
+      <p><strong>Temperatura:</strong> {{ datosClima.temperature_2m }} °C</p>
+      <p><strong>Precipitación:</strong> {{ datosClima.precipitation }} mm</p>
+      <p><strong>Condición:</strong> {{ climaService.getDescripcionClima(datosClima.weather_code) }}</p>
+      
+      <!-- Advertencia si llueve más de 5mm -->
+      <div *ngIf="datosClima.precipitation > 5" style="background-color: #ffcc00; padding: 10px; border-radius: 5px; margin-top: 10px;">
+        <strong>⚠️ Advertencia:</strong> La precipitación supera los 5 mm. Las condiciones podrían dificultar el mantenimiento.
+      </div>
+    </div>
+  </div>
+
+  <!-- Foto (R6) -->
+  <div class="ion-margin-top ion-text-center">
+    <ion-button expand="block" color="tertiary" (click)="tomarFoto()">
+      <ion-icon slot="start" name="camera-outline"></ion-icon>
+      Capturar Fotografía
+    </ion-button>
+    
+    <div *ngIf="fotoCapturada" class="ion-margin-top">
+      <img [src]="fotoCapturada" style="width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px;" />
+    </div>
+  </div>
+
+  <!-- Botón Guardar -->
+  <div class="ion-margin-top ion-margin-bottom">
+    <ion-button expand="block" color="success" (click)="guardarIncidencia()" [disabled]="guardando">
+      <ion-icon slot="start" name="save-outline"></ion-icon>
+      {{ guardando ? 'Guardando...' : 'Guardar Incidencia' }}
+    </ion-button>
+  </div>
 </ion-content>

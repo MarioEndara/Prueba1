@@ -2,7 +2,8 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
-  IonButton, IonIcon, IonRefresher, IonRefresherContent, IonCardContent } from '@ionic/angular/standalone';
+  IonButton, IonIcon, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { listOutline, addCircleOutline, bookmarkOutline } from 'ionicons/icons';
 
@@ -11,9 +12,9 @@ import { listOutline, addCircleOutline, bookmarkOutline } from 'ionicons/icons';
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   standalone: true,
-  imports: [IonCardContent, IonRefresherContent, IonRefresher, 
+  imports: [
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
-    IonButton, IonIcon
+    IonButton, IonIcon, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle
   ],
 })
 export class HomePage {
@@ -23,15 +24,7 @@ export class HomePage {
     addIcons({ listOutline, addCircleOutline, bookmarkOutline });
   }
 
-  irAListado() {
-    this.router.navigate(['/listado']);
-  }
-
-  irARegistro() {
-    this.router.navigate(['/registro']);
-  }
-
-  irASeguimiento() {
-    this.router.navigate(['/seguimiento']);
+  ir(ruta: string) {
+    this.router.navigate([ruta]);
   }
 }

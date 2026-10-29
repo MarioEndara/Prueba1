@@ -12,24 +12,17 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div *ngIf="errorMensaje" class="ion-padding ion-text-center" style="color: red;">
-    <p>{{ errorMensaje }}</p>
-  </div>
-
-  <div *ngIf="incidencias.length === 0 && !cargando && !errorMensaje" class="ion-padding ion-text-center">
-    <p>No hay incidencias registradas.</p>
-  </div>
-
+  <!-- Listado de Tarjetas -->
   <ion-list>
     <ion-card *ngFor="let item of incidencias" (click)="verDetalle(item.id)" style="cursor: pointer;">
       <ion-card-header>
-        <ion-card-title style="display: flex; justify-content: space-between;">
-          <span>{{ item.tipo | titlecase }}</span>
-          <ion-badge [color]="getColorEstado(item.estado)">{{ item.estado }}</ion-badge>
+        <ion-card-title style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 1.1rem; font-weight: bold;">{{ item.tipo | titlecase }}</span>
+          <ion-badge [color]="getColorEstado(item.estado)">{{ item.estado | uppercase }}</ion-badge>
         </ion-card-title>
       </ion-card-header>
       
-      <ion-card-content>
+      <ion-card-content style="font-size: 0.9rem;">
         <p><strong>Código:</strong> {{ item.id }}</p>
         <p><strong>Descripción:</strong> {{ item.descripcion }}</p>
         <p><strong>Dirección:</strong> {{ item.direccion }}</p>
@@ -43,13 +36,4 @@
       </ion-card-content>
     </ion-card>
   </ion-list>
-
-  <div *ngIf="cargando && page === 1" class="ion-text-center ion-padding">
-    <ion-spinner></ion-spinner>
-  </div>
-
-  <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)" [disabled]="!hayMasDatos">
-    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más...">
-    </ion-infinite-scroll-content>
-  </ion-infinite-scroll>
 </ion-content>

@@ -12,35 +12,30 @@ export class IncidenciaService {
   private http = inject(HttpClient);
   private base = `${environment.apiBase}/incidencias`;
 
-  // R3: Paginación remota real (pide página por página)
   getIncidencias(page: number, limit: number): Observable<Incidencia[]> {
     return this.http
       .get<Incidencia[]>(`${this.base}?page=${page}&limit=${limit}`)
       .pipe(catchError(this.handleError));
   }
 
-  // R2: Consultar un solo registro por su ID
   getIncidencia(id: string): Observable<Incidencia> {
     return this.http
       .get<Incidencia>(`${this.base}/${id}`)
       .pipe(catchError(this.handleError));
   }
 
-  // R5: Crear incidencia
   crearIncidencia(dto: CrearIncidenciaDto): Observable<Incidencia> {
     return this.http
       .post<Incidencia>(this.base, dto)
       .pipe(catchError(this.handleError));
   }
 
-  // R9: Actualizar incidencia (para cambiar estado u observaciones)
   actualizarIncidencia(id: string, cambios: Partial<Incidencia>): Observable<Incidencia> {
     return this.http
       .put<Incidencia>(`${this.base}/${id}`, cambios)
       .pipe(catchError(this.handleError));
   }
 
-  // Manejo de errores unificado
   private handleError(error: HttpErrorResponse) {
     let mensaje = 'Error de conexión con el servicio.';
     if (error.status === 0) {

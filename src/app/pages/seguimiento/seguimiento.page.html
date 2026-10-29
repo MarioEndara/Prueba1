@@ -1,13 +1,37 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>seguimiento</ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Mis Seguimientos</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">seguimiento</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div *ngIf="cargando" class="ion-text-center ion-padding" style="margin-top: 50px;">
+    <ion-spinner></ion-spinner>
+    <p>Cargando seguimiento local...</p>
+  </div>
+
+  <div *ngIf="!cargando && incidencias.length === 0" class="ion-padding ion-text-center" style="margin-top: 50px;">
+    <h2 style="color: gray;">No tienes incidencias en seguimiento</h2>
+    <p>Ve al listado y toca el ícono de marcador en el detalle de una incidencia.</p>
+  </div>
+
+  <ion-list *ngIf="!cargando && incidencias.length > 0">
+    <ion-card *ngFor="let item of incidencias" (click)="verDetalle(item.id)" style="cursor: pointer;">
+      <ion-card-header>
+        <ion-card-title style="display: flex; justify-content: space-between;">
+          <span>{{ item.tipo | titlecase }}</span>
+          <ion-badge [color]="getColorEstado(item.estado)">{{ item.estado }}</ion-badge>
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <p><strong>Código:</strong> {{ item.id }}</p>
+        <p><strong>Descripción:</strong> {{ item.descripcion }}</p>
+        <p><strong>Dirección:</strong> {{ item.direccion }}</p>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
 </ion-content>
