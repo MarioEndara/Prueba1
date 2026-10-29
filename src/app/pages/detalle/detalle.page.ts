@@ -5,10 +5,10 @@ import { ActivatedRoute } from '@angular/router';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
   IonButton, IonIcon, IonBadge, IonSpinner, IonItem, IonLabel, 
-  IonTextarea, IonAlert, ToastController, IonList, IonListHeader, IonImg
+  IonAlert, ToastController, IonList, IonListHeader, IonImg
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { bookmark, bookmarkOutline, createOutline } from 'ionicons/icons';
+import { bookmark, bookmarkOutline } from 'ionicons/icons';
 
 import { IncidenciaService } from '../../services/incidencia';
 import { SeguimientoService } from '../../services/seguimiento';
@@ -23,7 +23,7 @@ import { Incidencia } from '../../models/incidencia.model';
     CommonModule, FormsModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
     IonButton, IonIcon, IonBadge, IonSpinner, IonItem, IonLabel,
-    IonTextarea, IonAlert, IonList, IonListHeader, IonImg
+    IonAlert, IonList, IonListHeader, IonImg
   ],
 })
 export class DetallePage implements OnInit {
@@ -32,70 +32,73 @@ export class DetallePage implements OnInit {
   private seguimientoService = inject(SeguimientoService);
   private toastController = inject(ToastController);
 
-  incidencia: Incidencia | null = null;
+  incidencia: any = null;
   cargando = true;
+  errorMensaje = '';
   esSeguimiento = false;
   
-  // Para la alerta de resolución
   mostrarAlertaResolucion = false;
-  observacionResolucion = '';
   alertButtons = [
     { text: 'Cancelar', role: 'cancel' },
     { 
       text: 'Guardar', 
       handler: (data: any) => {
         if (!data.observacion || data.observacion.trim() === '') {
-          this.mostrarToast('La observación es obligatoria para resolver.');
-          return false; // Evita que se cierre la alerta
+          this.mostrarToast('La observación es obligatoria.');
+          return false; // No cierra la alerta
         }
         this.confirmarResolucion(data.observacion);
-        return true;
+        return true; // Cierra la alerta
       }
     }
   ];
 
   constructor() {
-    addIcons({ bookmark, bookmarkOutline, createOutline });
+    addIcons({ bookmark, bookmarkOutline });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.cargarDetalle(id);
-    }
-  }
+      // Datos fantasma para carga instantánea
+      this.incidencia = {
+        id: id,
+        tipo: 'Cargando...',
+        descripcion: '...',
+        direccion: '...',
+        sector: '...',
+        fecha: new Date().toISOString(),
+        estado: 'pendiente',
+        prioridad: 'media',
+        fotografia: '',
+        latitud: null,
+        longitud: null,
+        observacion_resolucion: ''
+      };
+      this.cargando = false; 
+      this.esSeguimiento = await this.seguimientoService.estaEnSeguimiento(id);
 
-  cargarDetalle(id: string) {
-    this.incidenciaService.getIncidencia(id).subscribe({
-      next: async (data) => {
-        this.incidencia = data;
-        this.esSeguimiento = await this.seguimientoService.estaEnSeguimiento(id);
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.mostrarToast(err.message);
-        this.cargando = false;
-      }
-    });
+      // Traer datos reales
+      this.incidenciaService.getIncidencia(id).subscribe({
+        next: (data) => { this.incidencia = data; },
+        error: (err) => { this.errorMensaje = 'Error al conectar.'; }
+      });
+    }
   }
 
   async toggleSeguimiento() {
     if (!this.incidencia) return;
     this.esSeguimiento = await this.seguimientoService.toggleSeguimiento(this.incidencia.id);
-    const msg = this.esSeguimiento ? 'Añadido a seguimiento' : 'Removido de seguimiento';
-    this.mostrarToast(msg);
+    this.mostrarToast(this.esSeguimiento ? 'Añadido a seguimiento' : 'Removido');
   }
 
-  // R9: Cambiar a "en_proceso"
   marcarEnProceso() {
-    if (!this.incidencia || this.incidencia.estado === 'resuelta') return;
-    this.actualizarEstado('en_proceso', this.incidencia.observacion_resolucion);
+    if (!this.incidencia) return;
+    this.actualizarEstado('en_proceso', this.incidencia.observacion_resolucion || '');
   }
 
-  // R9: Mostrar alerta para pedir observación antes de resolver
   pedirResolucion() {
-    if (!this.incidencia || this.incidencia.estado === 'resuelta') return;
-    this.observacionResolucion = this.incidencia.observacion_resolucion || '';
+    if (!this.incidencia) return;
     this.mostrarAlertaResolucion = true;
   }
 
@@ -103,24 +106,33 @@ export class DetallePage implements OnInit {
     if (!this.incidencia) return;
     this.actualizarEstado('resuelta', observacion);
   }
-
-  actualizarEstado(nuevoEstado: string, observacion: string) {
+    actualizarEstado(nuevoEstado: string, observacion: string) {
     if (!this.incidencia) return;
     
-    const cambios = {
+    // Actualizamos la pantalla rápido
+    this.incidencia.estado = nuevoEstado;
+    if (observacion) this.incidencia.observacion_resolucion = observacion;
+
+    // Solo enviamos los campos que cambian
+    const datosActualizados = {
       estado: nuevoEstado,
-      observacion_resolucion: observacion || ''
+      observacion_resolucion: observacion || this.incidencia.observacion_resolucion || ''
     };
 
-    this.incidenciaService.actualizarIncidencia(this.incidencia.id, cambios).subscribe({
+    this.incidenciaService.actualizarIncidencia(this.incidencia.id, datosActualizados).subscribe({
       next: (data) => {
         this.incidencia = data;
-        this.mostrarToast(`Estado actualizado a ${nuevoEstado}`);
+        this.mostrarToast(`¡Actualizado a ${nuevoEstado.replace('_', ' ')}!`);
       },
-      error: (err) => this.mostrarToast(err.message)
+      error: (err) => {
+        // Si falla, imprimimos el error en la consola y en pantalla
+        console.error('Error exacto de MockAPI:', err);
+        this.mostrarToast('Fallo al actualizar: ' + (err.error?.message || err.message));
+        this.ngOnInit(); // Recargamos los datos originales
+      }
     });
   }
-
+  
   getColorEstado(estado: string): string {
     switch (estado) {
       case 'pendiente': return 'warning';
@@ -131,12 +143,7 @@ export class DetallePage implements OnInit {
   }
 
   async mostrarToast(mensaje: string) {
-    const toast = await this.toastController.create({
-      message: mensaje,
-      duration: 2000,
-      position: 'bottom',
-      color: 'dark'
-    });
+    const toast = await this.toastController.create({ message: mensaje, duration: 2000, position: 'bottom', color: 'dark' });
     toast.present();
   }
 }

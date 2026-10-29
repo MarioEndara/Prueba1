@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/listado"></ion-back-button>
     </ion-buttons>
-    <ion-title>Detalle de Incidencia</ion-title>
+    <ion-title>Detalle</ion-title>
     <ion-buttons slot="end" *ngIf="incidencia">
       <ion-button (click)="toggleSeguimiento()">
         <ion-icon slot="icon-only" [name]="esSeguimiento ? 'bookmark' : 'bookmark-outline'"></ion-icon>
@@ -13,104 +13,51 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div *ngIf="cargando" class="ion-text-center ion-padding">
+  <!-- Spinner -->
+  <div *ngIf="cargando" class="ion-text-center ion-padding" style="margin-top: 50px;">
     <ion-spinner></ion-spinner>
+    <p>Cargando detalle...</p>
   </div>
 
+  <!-- Error -->
+  <div *ngIf="!cargando && errorMensaje" class="ion-text-center ion-padding">
+    <p style="color: var(--ion-color-danger);">{{ errorMensaje }}</p>
+    <ion-button size="small" fill="outline" (click)="ngOnInit()">Reintentar</ion-button>
+  </div>
+
+  <!-- Contenido -->
   <div *ngIf="!cargando && incidencia">
     <ion-list>
-      <ion-list-header>
-        <ion-label>Información General</ion-label>
-      </ion-list-header>
-      
-      <ion-item>
-        <ion-label>
-          <h2>Código</h2>
-          <p>{{ incidencia.id }}</p>
-        </ion-label>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>
-          <h2>Tipo</h2>
-          <p>{{ incidencia.tipo | titlecase }}</p>
-        </ion-label>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>
-          <h2>Estado</h2>
-          <ion-badge [color]="getColorEstado(incidencia.estado)">{{ incidencia.estado }}</ion-badge>
-        </ion-label>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>
-          <h2>Prioridad</h2>
-          <p>{{ incidencia.prioridad | titlecase }}</p>
-        </ion-label>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>
-          <h2>Descripción</h2>
-          <p style="white-space: normal;">{{ incidencia.descripcion }}</p>
-        </ion-label>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>
-          <h2>Dirección</h2>
-          <p style="white-space: normal;">{{ incidencia.direccion }}</p>
-        </ion-label>
-      </ion-item>
-
-      <ion-item>
-        <ion-label>
-          <h2>Sector</h2>
-          <p>{{ incidencia.sector }}</p>
-        </ion-label>
-      </ion-item>
-
-      <ion-item *ngIf="incidencia.observacion_resolucion">
-        <ion-label>
-          <h2>Observación de Resolución</h2>
-          <p style="white-space: normal;">{{ incidencia.observacion_resolucion }}</p>
-        </ion-label>
-      </ion-item>
+      <ion-list-header><ion-label>Información</ion-label></ion-list-header>
+      <ion-item><ion-label><h2>Código</h2><p>{{ incidencia.id }}</p></ion-label></ion-item>
+      <ion-item><ion-label><h2>Tipo</h2><p>{{ incidencia.tipo | titlecase }}</p></ion-label></ion-item>
+      <ion-item><ion-label><h2>Estado</h2><ion-badge [color]="getColorEstado(incidencia.estado)">{{ incidencia.estado }}</ion-badge></ion-label></ion-item>
+      <ion-item><ion-label><h2>Prioridad</h2><p>{{ incidencia.prioridad | titlecase }}</p></ion-label></ion-item>
+      <ion-item><ion-label><h2>Descripción</h2><p style="white-space: normal;">{{ incidencia.descripcion }}</p></ion-label></ion-item>
+      <ion-item><ion-label><h2>Dirección</h2><p style="white-space: normal;">{{ incidencia.direccion }}</p></ion-label></ion-item>
+      <ion-item><ion-label><h2>Sector</h2><p>{{ incidencia.sector }}</p></ion-label></ion-item>
+      <ion-item *ngIf="incidencia.observacion_resolucion"><ion-label><h2>Observación</h2><p style="white-space: normal;">{{ incidencia.observacion_resolucion }}</p></ion-label></ion-item>
     </ion-list>
 
-    <!-- Fotografía -->
     <div *ngIf="incidencia.fotografia" class="ion-margin-top">
-      <ion-img [src]="incidencia.fotografia" style="border-radius: 8px; overflow: hidden; width: 100%;"></ion-img>
+      <ion-img [src]="incidencia.fotografia" style="border-radius: 8px; width: 100%;"></ion-img>
     </div>
 
-    <!-- Botones de acción (R9) -->
     <div class="ion-margin-top" style="display: flex; flex-direction: column; gap: 10px;">
-      <ion-button 
-        expand="block" 
-        color="primary" 
-        *ngIf="incidencia.estado === 'pendiente'"
-        (click)="marcarEnProceso()">
+      <ion-button expand="block" color="primary" *ngIf="incidencia.estado === 'pendiente'" (click)="marcarEnProceso()">
         Marcar como En Proceso
       </ion-button>
-
-      <ion-button 
-        expand="block" 
-        color="success" 
-        *ngIf="incidencia.estado !== 'resuelta'"
-        (click)="pedirResolucion()">
+      <ion-button expand="block" color="success" *ngIf="incidencia.estado !== 'resuelta'" (click)="pedirResolucion()">
         Marcar como Resuelta
       </ion-button>
     </div>
   </div>
 </ion-content>
 
-<!-- Alerta para ingresar observación al resolver (R9) -->
 <ion-alert
   [isOpen]="mostrarAlertaResolucion"
   header="Resolver Incidencia"
-  message="Por favor, ingrese una observación de cómo se resolvió la incidencia."
+  message="Ingrese una observación."
   [buttons]="alertButtons"
   [inputs]="[{ name: 'observacion', type: 'textarea', placeholder: 'Observación obligatoria...' }]"
   (didDismiss)="mostrarAlertaResolucion = false">

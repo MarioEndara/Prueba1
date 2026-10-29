@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { CrearIncidenciaDto, Incidencia } from '../models/incidencia.model';
+
 
 @Injectable({
   providedIn: 'root'
@@ -29,13 +30,19 @@ export class IncidenciaService {
       .post<Incidencia>(this.base, dto)
       .pipe(catchError(this.handleError));
   }
+  actualizarIncidencia(id: string, cambios: any): Observable<Incidencia> {
+  // Enviamos los headers explícitos para evitar el bloqueo CORS del navegador
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  });
 
-  actualizarIncidencia(id: string, cambios: Partial<Incidencia>): Observable<Incidencia> {
-    return this.http
-      .put<Incidencia>(`${this.base}/${id}`, cambios)
-      .pipe(catchError(this.handleError));
+  // Hacemos un PUT (MockAPI prefiere PUT para actualizar)
+  return this.http
+    .put<Incidencia>(`${this.base}/${id}`, cambios, { headers })
+    .pipe(catchError(this.handleError));
   }
-
+  
   private handleError(error: HttpErrorResponse) {
     let mensaje = 'Error de conexión con el servicio.';
     if (error.status === 0) {
